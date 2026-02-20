@@ -1,0 +1,48 @@
+# Logs
+logs/
+*.log
+
+# Binaries
+bin/
+obj/
+
+# IDE
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Test Results
+TestResults/
+coverage/
+*.trx
+
+# User-specific files
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+
+# Visual Studio
+.vs/
+*.sln.iml
+
+# Rider
+.idea/
+*.sln.iml
+*.DotSettings.user
+
+# ReportViewer
+ReportViewerCache/

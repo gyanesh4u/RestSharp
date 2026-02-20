@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <!-- NUnit Adapter Configuration -->
+  <NUnit>
+    <NumberOfTestWorkers>1</NumberOfTestWorkers>
+    <Verbosity>Detailed</Verbosity>
+  </NUnit>
+
+  <!-- Test Run Configuration -->
+  <RunConfiguration>
+    <!-- Set timeout for each test (in milliseconds) -->
+    <TestSessionTimeout>600000</TestSessionTimeout>
+    <MaxCpuCount>1</MaxCpuCount>
+    <ResultsDirectory>.\TestResults</ResultsDirectory>
+  </RunConfiguration>
+
+  <!-- Reqnroll/SpecFlow Configuration Section -->
+  <!-- These map to your specflow.json settings -->
+  <Reqnroll>
+    <!-- Language for feature files -->
+    <Language>en</Language>
+    
+    <!-- Step Assembly Configuration -->
+    <StepAssemblyName>RestSharpReqnroll</StepAssemblyName>
+    
+    <!-- Tracing Settings -->
+    <Trace>
+      <TraceSuccessfulSteps>true</TraceSuccessfulSteps>
+      <TraceTimings>true</TraceTimings>
+    </Trace>
+  </Reqnroll>
+
+  <!-- API Configuration (from appsettings.json) -->
+  <!-- Note: These are referenced in your code via IConfiguration -->
+  <ApiConfiguration>
+    <BaseUrl>https://jsonplaceholder.typicode.com</BaseUrl>
+    <Timeout>30</Timeout>
+    <RetryCount>3</RetryCount>
+  </ApiConfiguration>
+
+  <!-- Test Environment Configuration (from appsettings.json) -->
+  <TestEnvironment>
+    <Environment>Development</Environment>
+    <ExecutionMode>Sequential</ExecutionMode>
+    <Threads>1</Threads>
+  </TestEnvironment>
+
+  <!-- Logging Configuration (from appsettings.json) -->
+  <Logging>
+    <LogLevel>
+      <Default>Information</Default>
+      <Microsoft>Warning</Microsoft>
+    </LogLevel>
+  </Logging>
+
+  <!-- Test Adapter Configuration -->
+  <TestAdapterPaths>
+    <Directory>
+      {solutionDirectory}\packages
+    </Directory>
+  </TestAdapterPaths>
+
+  <!-- Parallel Execution Settings -->
+  <!-- Set to false for sequential, true for parallel -->
+  <RunConfiguration>
+    <DisableParallelization>true</DisableParallelization>
+  </RunConfiguration>
+
+  <!-- Output Verbosity -->
+  <LoggerRunSettings>
+    <Verbosity>Detailed</Verbosity>
+  </LoggerRunSettings>
+
+  <!-- Assembly Resolution -->
+  <AssemblyResolver>
+    <Directory>bin/Debug/net8.0</Directory>
+    <Directory>bin/Release/net8.0</Directory>
+  </AssemblyResolver>
+
+</RunSettings>

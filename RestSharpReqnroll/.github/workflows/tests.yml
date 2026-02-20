@@ -1,0 +1,123 @@
+name: Run Tests with Allure Report
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * *'  # Run daily at 2 AM
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        dotnet-version: ['8.0.x']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+
+    - name: Setup Java (required for Allure)
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+
+    - name: Install Allure CLI
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          sudo apt-add-repository ppa:qameta/allure
+          sudo apt-get update
+          sudo apt-get install -y allure
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+          brew install allure
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+          choco install allure -y
+        fi
+      shell: bash
+
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: RestSharpReqnroll
+
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+      working-directory: RestSharpReqnroll
+
+    - name: Run tests with Allure
+      run: |
+        mkdir -p allure-results
+        dotnet test \
+          --no-build \
+          --configuration Release \
+          --logger "trx;LogFileName=allure-results/testResults.trx" \
+          --results-directory allure-results \
+          -v detailed || true
+      working-directory: RestSharpReqnroll
+
+    - name: Generate Allure Report
+      if: always()
+      run: |
+        allure generate allure-results -o allure-report
+      working-directory: RestSharpReqnroll
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.os }}
+        path: RestSharpReqnroll/allure-results
+        retention-days: 30
+
+    - name: Upload Allure report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: allure-report-${{ matrix.os }}
+        path: RestSharpReqnroll/allure-report
+        retention-days: 30
+
+    - name: Publish test report
+      if: always()
+      uses: dorny/test-reporter@v1
+      with:
+        name: Test Results (${{ matrix.os }})
+        path: RestSharpReqnroll/allure-results/testResults.trx
+        reporter: 'dotnet-trx'
+        fail-on-error: false
+
+    - name: Comment PR with test results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          const testResultPath = 'RestSharpReqnroll/allure-results/testResults.trx';
+          if (fs.existsSync(testResultPath)) {
+            const content = fs.readFileSync(testResultPath, 'utf8');
+            const passed = (content.match(/outcome="Passed"/g) || []).length;
+            const failed = (content.match(/outcome="Failed"/g) || []).length;
+            
+            const comment = `### Test Results (${{ matrix.os }})
+            - ✅ Passed: ${passed}
+            - ❌ Failed: ${failed}
+            - 📊 [View Allure Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }
