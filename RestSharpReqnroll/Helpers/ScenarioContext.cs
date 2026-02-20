@@ -1,25 +1,49 @@
+using Reqnroll;
+using System.Linq;
+
 namespace RestSharpReqnroll.Helpers
 {
     public class ScenarioContextHelper
     {
-        private readonly Dictionary<string, object?> _context = new();
+        private readonly ScenarioContext _scenarioContext;
 
-        public void Set(string key, object? value)
+        public ScenarioContextHelper(ScenarioContext scenarioContext)
         {
-            _context[key] = value;
+            _scenarioContext = scenarioContext;
         }
 
-        public T? Get<T>(string key)
+        public void Set<T>(string key, T value)
         {
-            if (_context.TryGetValue(key, out var value))
+            _scenarioContext[key] = value!;
+        }
+
+        public T Get<T>(string key)
+        {
+            return _scenarioContext.TryGetValue(key, out var value)
+                ? (T)value
+                : default!;
+        }
+
+        public bool Contains(string key)
+        {
+            return _scenarioContext.ContainsKey(key);
+        }
+
+        public void Remove(string key)
+        {
+            if (_scenarioContext.ContainsKey(key))
+                _scenarioContext.Remove(key);
+        }
+
+        // ✅ REQUIRED BY HOOKS
+        public void Clear()
+        {
+            var keys = _scenarioContext.Keys.ToList();
+
+            foreach (var key in keys)
             {
-                return (T?)value;
+                _scenarioContext.Remove(key);
             }
-            throw new KeyNotFoundException($"Key '{key}' not found in context.");
         }
-
-        public bool Contains(string key) => _context.ContainsKey(key);
-
-        public void Clear() => _context.Clear();
     }
 }
